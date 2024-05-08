@@ -1,0 +1,10 @@
+databaseChangeLog:
+  - include:
+      file: classpath:/io/vanillabp/camunda8/liquibase/main.yaml
+      # file: /db/changelog/initial-setup.yaml
+  - include:
+      file: /db/changelog/insurance-demo.yaml
+  - include:
+      file: /db/changelog/insurance-aggregate.yaml
+  - include:
+      file: /db/changelog/customer.yaml

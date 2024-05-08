@@ -1,0 +1,32 @@
+databaseChangeLog:
+  - changeSet:
+      id: insurance-aggregate
+      author: jens
+      changes:
+        - createTable:
+            tableName: INSURANCE_AGGREGATE
+            columns:
+              - column:
+                  name: id
+                  type: uuid
+                  constraints:
+                    primaryKey: true
+                    nullable: false
+              - column:
+                  name: created_at
+                  type: timestamp
+              - column:
+                  name: updated_at
+                  type: timestamp
+              - column:
+                  name: credit_check_outcome
+                  type: varchar(128)
+              - column:
+                  name: risk_assessment_outcome
+                  type: varchar(128)
+              - column:
+                  name: manual_risk_assessment_outcome
+                  type: varchar(128)
+              - column:
+                  name: manual_credit_check_outcome
+                  type: varchar(128)

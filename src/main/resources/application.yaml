@@ -1,0 +1,47 @@
+spring:
+  application:
+    name: insurance
+  liquibase:
+    enabled: true
+    change-log: classpath:/db/db.changelog-master.yaml
+  jpa:
+    properties:
+      hibernate:
+        dialect: org.hibernate.dialect.PostgreSQLDialect
+  datasource:
+    url: jdbc:postgresql://localhost:5455/insurance
+    password: insurance
+    username: insurance
+
+camunda:
+  client:
+    mode: oidc
+    auth:
+      oidc-type: keycloak
+      issuer: http://localhost:18080/auth/realms/camunda-platform
+      client-id: zeebe
+      client-secret: zecret
+    zeebe:
+      enabled: true
+      base-url: http://localhost:26500
+      defaults:
+        enabled: false
+    operate:
+      enabled: false
+    tasklist:
+      enabled: false
+    optimize:
+      enabled: false
+    identity:
+      enabled: false
+
+vanillabp:
+  workflow-modules:
+    insurance:
+      adapters:
+        camunda8:
+          resources-location: classpath*:/processes8
+
+logging:
+  level:
+    io.camunda.zeebe.client.impl.ZeebeCallCredentials: ERROR
