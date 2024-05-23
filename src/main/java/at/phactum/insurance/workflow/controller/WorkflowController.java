@@ -1,9 +1,11 @@
 package at.phactum.insurance.workflow.controller;
 
+import at.phactum.insurance.dto.CompleteTaskDto;
 import at.phactum.insurance.dto.TypeDto;
 import at.phactum.insurance.workflow.service.InsuranceWorkflowService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -26,6 +28,14 @@ public class WorkflowController {
     @GetMapping
     public ResponseEntity<String> getRequest() {
         return ResponseEntity.ok().body("Get Request");
+    }
+
+    @CrossOrigin("http://localhost:4200")
+    @PostMapping("complete-task")
+    public ResponseEntity<Void> completeTask(@RequestBody CompleteTaskDto completeTaskDto) {
+        insuranceWorkflowService.completeUserTask(completeTaskDto);
+        return ResponseEntity.ok()
+                             .build();
     }
 
 }
