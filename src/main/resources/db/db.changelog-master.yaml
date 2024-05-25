@@ -8,3 +8,5 @@ databaseChangeLog:
       file: /db/changelog/insurance-aggregate.yaml
   - include:
       file: /db/changelog/customer.yaml
+  - include:
+      file: /db/changelog/add-insurance-type.yaml
