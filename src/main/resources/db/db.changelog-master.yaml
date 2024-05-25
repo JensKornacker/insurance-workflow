@@ -10,3 +10,5 @@ databaseChangeLog:
       file: /db/changelog/customer.yaml
   - include:
       file: /db/changelog/add-insurance-type.yaml
+  - include:
+      file: /db/changelog/add-customer-to-insurance-aggregate.yaml

@@ -40,4 +40,7 @@ public class InsuranceAggregate {
     @Column(name = "insurance_type")
     private String insuranceType;
 
+    @Column(name = "customer")
+    private UUID customer;
+
 }

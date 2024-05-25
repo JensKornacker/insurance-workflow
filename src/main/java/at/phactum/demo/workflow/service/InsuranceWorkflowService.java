@@ -5,11 +5,13 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
 
+import at.phactum.demo.customer.dto.CustomerDto;
+import at.phactum.demo.customer.service.CustomerService;
 import at.phactum.demo.shared.utils.HashMapConverter;
 import at.phactum.demo.workflow.dto.CompleteTaskDto;
 import at.phactum.demo.workflow.dto.CompleteTaskEvent;
-import at.phactum.demo.workflow.dto.TypeDto;
 import at.phactum.demo.workflow.dto.TaskDto;
+import at.phactum.demo.workflow.dto.TypeDto;
 import at.phactum.demo.workflow.persistence.InsuranceAggregate;
 import at.phactum.demo.workflow.persistence.InsuranceAggregateRepository;
 import io.vanillabp.spi.process.ProcessService;
@@ -32,12 +34,14 @@ public class InsuranceWorkflowService {
     private final RestClientService restClientService;
     private final HashMapConverter hashMapConverter;
     private final InsuranceAggregateRepository insuranceAggregateRepository;
+    private final CustomerService customerService;
 
     public void startInsuranceWorkflow(TypeDto typeDto) throws Exception {
         InsuranceAggregate insuranceAggregate = new InsuranceAggregate();
         insuranceAggregate.setId(UUID.randomUUID().toString());
         insuranceAggregate.setCreatedAt(LocalDateTime.now());
         insuranceAggregate.setInsuranceType(typeDto.getInsuranceType().toString());
+        insuranceAggregate.setCustomer(typeDto.getCustomerId());
         processService.startWorkflow(insuranceAggregate);
     }
 
@@ -49,9 +53,12 @@ public class InsuranceWorkflowService {
     @WorkflowTask
     public void manualCreditworthinessCheck(InsuranceAggregate insuranceAggregate, @TaskId String taskId) {
         log.info("task ID: {}", taskId);
+        final CustomerDto customerDto = customerService.getCustomer(insuranceAggregate.getCustomer());
         Map<String, Object> addInfo = new HashMap<>();
+        addCustomerToAdditionalInfo(addInfo, customerDto);
         addInfo.put("worthiness", "check worthiness");
         addInfo.put("account", "check coverage");
+
         TaskDto taskDto = new TaskDto();
         taskDto.setTaskId(taskId);
         taskDto.setTitle("Manual Worthiness Check");
@@ -71,11 +78,11 @@ public class InsuranceWorkflowService {
 
     @WorkflowTask
     public void manualRiskAssessment(InsuranceAggregate insuranceAggregate, @TaskId String taskId) {
-        TaskDto taskDto = new TaskDto();
-
+        final CustomerDto customerDto = customerService.getCustomer(insuranceAggregate.getCustomer());
         Map<String, Object> addInfo = new HashMap<>();
         addInfo.put("risk assessment", "schlechtes Wetter");
-        String riskAssessment = hashMapConverter.convertToDatabaseColumn(addInfo);
+        addCustomerToAdditionalInfo(addInfo, customerDto);
+        TaskDto taskDto = new TaskDto();
         taskDto.setTaskId(taskId);
         taskDto.setTitle("Manual Risk Assessment");
         taskDto.setDescription("risk assessment manually");
@@ -83,9 +90,8 @@ public class InsuranceWorkflowService {
         taskDto.setUrl("http://localhost:8080");
         taskDto.setAggregateId(insuranceAggregate.getId());
         taskDto.setCompleteEndpoint("/workflow/complete-task");
-        taskDto.setAdditionalInfo(riskAssessment);
+        taskDto.setAdditionalInfo(hashMapConverter.convertToDatabaseColumn(addInfo));
         restClientService.sendTaskToList(taskDto);
-        log.info("task ID: {}", taskId);
     }
 
     @WorkflowTask
@@ -118,6 +124,14 @@ public class InsuranceWorkflowService {
                                                                                   .orElseThrow(null);
         insuranceAggregate.setManualCreditCheckOutcome(manualCreditCheckOutcome);
         return insuranceAggregateRepository.save(insuranceAggregate);
+    }
+
+    private void addCustomerToAdditionalInfo(Map<String, Object> addInfo, CustomerDto customerDto) {
+        addInfo.put("customer", customerDto.getFirstname() + " " + customerDto.getLastname());
+        addInfo.put("customerEmail", customerDto.getEmail());
+        addInfo.put("customerPhoneNumber", customerDto.getPhoneNumber());
+        addInfo.put("customerDateOfBirth", customerDto.getDateOfBirth());
+        addInfo.put("customerGender", customerDto.getGender().toString());
     }
 
 }
