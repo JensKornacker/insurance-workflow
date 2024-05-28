@@ -16,11 +16,14 @@ import org.springframework.stereotype.Service;
 @RequiredArgsConstructor
 public class CustomerService {
 
+    private static final int CUSTOMER_NUMBER_START = 54321;
+
     private final CustomerRepository customerRepository;
     private final CustomerMapper customerMapper;
 
     public CustomerDto saveCustomer(CreateCustomerForm createCustomerForm) {
         Customer customer = customerMapper.map(createCustomerForm);
+        customer.setCustomerNumber(generateCustomerNumber());
         customer.setCreatedAt(LocalDateTime.now());
         return customerMapper.map(customerRepository.save(customer));
     }
@@ -32,6 +35,11 @@ public class CustomerService {
     public CustomerDto getCustomer(UUID id) {
         return customerMapper.map(customerRepository.findById(id)
                                                     .orElseThrow(null));
+    }
+
+    private int generateCustomerNumber() {
+        final long customersCount = customerRepository.count();
+        return CUSTOMER_NUMBER_START + Long.valueOf(customersCount).intValue();
     }
 
 }

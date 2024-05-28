@@ -9,4 +9,6 @@ import lombok.Data;
 public class TypeDto {
     private InsuranceType insuranceType;
     private UUID customerId;
+    private boolean mudslideRisk;
+    private boolean floodRisk;
 }

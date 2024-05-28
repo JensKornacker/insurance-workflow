@@ -12,3 +12,7 @@ databaseChangeLog:
       file: /db/changelog/add-insurance-type.yaml
   - include:
       file: /db/changelog/add-customer-to-insurance-aggregate.yaml
+  - include:
+      file: /db/changelog/add-address-to-customer.yaml
+  - include:
+      file: /db/changelog/mudslide-risk-to-aggregate.yaml

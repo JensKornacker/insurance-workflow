@@ -9,6 +9,7 @@ import jakarta.persistence.Entity;
 import jakarta.persistence.Table;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
+import org.checkerframework.checker.units.qual.C;
 
 @EqualsAndHashCode(callSuper = true)
 @Entity
@@ -33,4 +34,20 @@ public class Customer extends AbstractCrud {
 
     @Column(name = "EMAIL_ADDRESS")
     private String email;
+
+    @Column(name = "street")
+    private String street;
+
+    @Column(name = "zip_code")
+    private String zipCode;
+
+    @Column(name = "city")
+    private String city;
+
+    @Column(name = "country")
+    private String country;
+
+    @Column(name = "customer_number")
+    private Integer customerNumber;
+
 }

@@ -10,4 +10,5 @@ public class CompleteTaskDto {
     String taskId;
     String aggregateId;
     String manualCreditCheckOutcome;
+    String manualRiskAssessmentOutcome;
 }

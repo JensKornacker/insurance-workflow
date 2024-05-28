@@ -42,6 +42,8 @@ public class InsuranceWorkflowService {
         insuranceAggregate.setCreatedAt(LocalDateTime.now());
         insuranceAggregate.setInsuranceType(typeDto.getInsuranceType().toString());
         insuranceAggregate.setCustomer(typeDto.getCustomerId());
+        insuranceAggregate.setFloodRisk(typeDto.isFloodRisk());
+        insuranceAggregate.setMudslideRisk(typeDto.isMudslideRisk());
         processService.startWorkflow(insuranceAggregate);
     }
 
@@ -73,7 +75,11 @@ public class InsuranceWorkflowService {
 
     @WorkflowTask
     public void riskAssessment(InsuranceAggregate insuranceAggregate) {
-        insuranceAggregate.setRiskAssessmentOutcome("APPROVED");
+        if (insuranceAggregate.isFloodRisk() || insuranceAggregate.isMudslideRisk()) {
+            insuranceAggregate.setRiskAssessmentOutcome("REJECTED");
+        } else {
+            insuranceAggregate.setRiskAssessmentOutcome("APPROVED");
+        }
     }
 
     @WorkflowTask
@@ -81,6 +87,8 @@ public class InsuranceWorkflowService {
         final CustomerDto customerDto = customerService.getCustomer(insuranceAggregate.getCustomer());
         Map<String, Object> addInfo = new HashMap<>();
         addInfo.put("risk assessment", "schlechtes Wetter");
+        addInfo.put("mudslide_risk", insuranceAggregate.isMudslideRisk());
+        addInfo.put("flood_risk", insuranceAggregate.isFloodRisk());
         addCustomerToAdditionalInfo(addInfo, customerDto);
         TaskDto taskDto = new TaskDto();
         taskDto.setTaskId(taskId);
@@ -102,11 +110,16 @@ public class InsuranceWorkflowService {
     public void completeUserTask(CompleteTaskDto completeTaskDto) {
         InsuranceAggregate insuranceAggregate;
         if (completeTaskDto.getManualCreditCheckOutcome() != null) {
-            insuranceAggregate = setManualCreditCheckOutcome(completeTaskDto.getAggregateId(),
-                                                             completeTaskDto.getManualCreditCheckOutcome());
+            insuranceAggregate = setManuallyOutcomes(completeTaskDto.getAggregateId(),
+                                                     completeTaskDto.getManualCreditCheckOutcome(),
+                                                     null);
+        } else if (completeTaskDto.getManualRiskAssessmentOutcome() != null) {
+            insuranceAggregate = setManuallyOutcomes(completeTaskDto.getAggregateId(),
+                                                     null,
+                                                     completeTaskDto.getManualRiskAssessmentOutcome());
         } else {
             insuranceAggregate = insuranceAggregateRepository.findById(completeTaskDto.getAggregateId())
-                                                                                      .orElseThrow(null);
+                                                             .orElseThrow(null);
         }
         try {
             processService.completeUserTask(insuranceAggregate, completeTaskDto.getTaskId());
@@ -119,10 +132,14 @@ public class InsuranceWorkflowService {
 
     }
 
-    private InsuranceAggregate setManualCreditCheckOutcome(String aggregateId, String manualCreditCheckOutcome) {
+    private InsuranceAggregate setManuallyOutcomes(String aggregateId, String manualCreditCheckOutcome, String manualRiskAssessmentOutcome) {
         final InsuranceAggregate insuranceAggregate = insuranceAggregateRepository.findById(aggregateId)
                                                                                   .orElseThrow(null);
-        insuranceAggregate.setManualCreditCheckOutcome(manualCreditCheckOutcome);
+        if (manualCreditCheckOutcome != null) {
+            insuranceAggregate.setManualCreditCheckOutcome(manualCreditCheckOutcome);
+        } else if (manualRiskAssessmentOutcome != null) {
+            insuranceAggregate.setManualRiskAssessmentOutcome(manualRiskAssessmentOutcome);
+        }
         return insuranceAggregateRepository.save(insuranceAggregate);
     }
 
@@ -130,7 +147,7 @@ public class InsuranceWorkflowService {
         addInfo.put("customer", customerDto.getFirstname() + " " + customerDto.getLastname());
         addInfo.put("customerEmail", customerDto.getEmail());
         addInfo.put("customerPhoneNumber", customerDto.getPhoneNumber());
-        addInfo.put("customerDateOfBirth", customerDto.getDateOfBirth());
+        addInfo.put("customerDateOfBirth", customerDto.getDateOfBirth().toString());
         addInfo.put("customerGender", customerDto.getGender().toString());
     }
 

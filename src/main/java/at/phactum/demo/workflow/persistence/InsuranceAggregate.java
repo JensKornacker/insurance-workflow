@@ -43,4 +43,10 @@ public class InsuranceAggregate {
     @Column(name = "customer")
     private UUID customer;
 
+    @Column(name = "mudslide_risk")
+    private boolean mudslideRisk = false;
+
+    @Column(name = "flood_risk")
+    private boolean floodRisk = false;
+
 }

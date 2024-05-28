@@ -16,4 +16,8 @@ public class CreateCustomerForm {
     LocalDate dateOfBirth;
     String phoneNumber;
     String email;
+    String street;
+    String zipCode;
+    String city;
+    String country;
 }
