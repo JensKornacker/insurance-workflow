@@ -2,13 +2,17 @@ package at.phactum.demo.workflow.dto;
 
 import java.util.UUID;
 
-import at.phactum.demo.insurance.entity.InsuranceType;
+import at.phactum.demo.insurance.persistence.InsuranceType;
+import lombok.AccessLevel;
 import lombok.Data;
+import lombok.experimental.FieldDefaults;
 
 @Data
+@FieldDefaults(level = AccessLevel.PRIVATE)
 public class TypeDto {
-    private InsuranceType insuranceType;
-    private UUID customerId;
-    private boolean mudslideRisk;
-    private boolean floodRisk;
+    InsuranceType insuranceType;
+    UUID customerId;
+    boolean mudslideRisk;
+    boolean floodRisk;
+    boolean sufficientIncome;
 }

@@ -8,7 +8,6 @@ import jakarta.persistence.Entity;
 import jakarta.persistence.Id;
 import jakarta.persistence.Table;
 import lombok.Data;
-import org.checkerframework.checker.units.qual.C;
 
 @Entity
 @Table(name = "INSURANCE_AGGREGATE")
@@ -40,13 +39,16 @@ public class InsuranceAggregate {
     @Column(name = "insurance_type")
     private String insuranceType;
 
-    @Column(name = "customer")
-    private UUID customer;
+    @Column(name = "customer_id")
+    private UUID customerId;
 
     @Column(name = "mudslide_risk")
     private boolean mudslideRisk = false;
 
     @Column(name = "flood_risk")
     private boolean floodRisk = false;
+
+    @Column(name = "sufficient_income")
+    private boolean sufficientIncome = false;
 
 }

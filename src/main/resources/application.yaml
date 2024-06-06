@@ -45,3 +45,5 @@ vanillabp:
 logging:
   level:
     io.camunda.zeebe.client.impl.ZeebeCallCredentials: ERROR
+
+workerId: test

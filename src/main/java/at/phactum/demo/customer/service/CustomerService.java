@@ -2,6 +2,7 @@ package at.phactum.demo.customer.service;
 
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Set;
 import java.util.UUID;
 
 import at.phactum.demo.customer.dto.CustomerDto;
@@ -9,8 +10,10 @@ import at.phactum.demo.customer.persistence.Customer;
 import at.phactum.demo.customer.dto.CreateCustomerForm;
 import at.phactum.demo.customer.mapper.CustomerMapper;
 import at.phactum.demo.customer.persistence.CustomerRepository;
+import at.phactum.demo.insurance.persistence.Insurance;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 @Service
 @RequiredArgsConstructor
@@ -32,9 +35,12 @@ public class CustomerService {
         return customerMapper.map(customerRepository.findAll());
     }
 
+    @Transactional
     public CustomerDto getCustomer(UUID id) {
-        return customerMapper.map(customerRepository.findById(id)
-                                                    .orElseThrow(null));
+        final Customer customer = customerRepository.findById(id)
+                                                    .orElseThrow(null);
+        final Set<Insurance> insurances = customer.getInsurances();
+        return customerMapper.map(customer);
     }
 
     private int generateCustomerNumber() {

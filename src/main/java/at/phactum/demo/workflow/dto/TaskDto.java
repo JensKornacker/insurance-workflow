@@ -12,4 +12,5 @@ public class TaskDto {
     private String completeEndpoint;
     private String additionalInfo;
     private String aggregateId;
+    private String status;
 }

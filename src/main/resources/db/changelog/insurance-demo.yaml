@@ -27,3 +27,6 @@ databaseChangeLog:
               - column:
                   name: INSURANCE_TYPE
                   type: int
+              - column:
+                  name: insurance_number
+                  type: int

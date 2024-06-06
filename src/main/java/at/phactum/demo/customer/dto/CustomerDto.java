@@ -2,8 +2,10 @@ package at.phactum.demo.customer.dto;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.util.Set;
 import java.util.UUID;
 
+import at.phactum.demo.insurance.persistence.Insurance;
 import at.phactum.demo.shared.entity.Gender;
 import lombok.AccessLevel;
 import lombok.Data;
@@ -26,5 +28,6 @@ public class CustomerDto {
     String city;
     String country;
     int customerNumber;
+    Set<Insurance> insurances;
 
 }

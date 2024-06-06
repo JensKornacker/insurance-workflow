@@ -1,4 +1,4 @@
-package at.phactum.demo.insurance.entity;
+package at.phactum.demo.insurance.persistence;
 
 public enum InsuranceType {
     LIABILITY_INSURANCE,

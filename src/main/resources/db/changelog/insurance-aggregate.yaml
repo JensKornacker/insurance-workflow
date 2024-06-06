@@ -30,3 +30,18 @@ databaseChangeLog:
               - column:
                   name: manual_credit_check_outcome
                   type: varchar(128)
+              - column:
+                  name: mudslide_risk
+                  type: boolean
+              - column:
+                  name: flood_risk
+                  type: boolean
+              - column:
+                  name: customer_id
+                  type: uuid
+              - column:
+                  name: insurance_type
+                  type: varchar(128)
+              - column:
+                  name: sufficient_income
+                  type: boolean

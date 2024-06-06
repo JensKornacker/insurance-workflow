@@ -1,7 +1,6 @@
 databaseChangeLog:
   - include:
       file: classpath:/io/vanillabp/camunda8/liquibase/main.yaml
-      # file: /db/changelog/initial-setup.yaml
   - include:
       file: /db/changelog/insurance-demo.yaml
   - include:
@@ -9,10 +8,4 @@ databaseChangeLog:
   - include:
       file: /db/changelog/customer.yaml
   - include:
-      file: /db/changelog/add-insurance-type.yaml
-  - include:
-      file: /db/changelog/add-customer-to-insurance-aggregate.yaml
-  - include:
-      file: /db/changelog/add-address-to-customer.yaml
-  - include:
-      file: /db/changelog/mudslide-risk-to-aggregate.yaml
+      file: /db/changelog/customer-insurance-relation.yaml
