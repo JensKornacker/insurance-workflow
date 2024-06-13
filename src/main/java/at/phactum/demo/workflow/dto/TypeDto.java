@@ -15,4 +15,6 @@ public class TypeDto {
     boolean mudslideRisk;
     boolean floodRisk;
     boolean sufficientIncome;
+    String insuranceCoverage;
+    String insuranceSum;
 }

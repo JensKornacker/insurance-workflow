@@ -1,37 +1,135 @@
 package at.phactum.demo.insurance.persistence;
 
+import java.time.LocalDateTime;
 import java.util.Set;
+import java.util.UUID;
 
 import at.phactum.demo.customer.persistence.Customer;
-import at.phactum.demo.shared.entity.AbstractCrud;
-import jakarta.persistence.CascadeType;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.FetchType;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
+import jakarta.persistence.Id;
 import jakarta.persistence.ManyToMany;
 import jakarta.persistence.Table;
-import lombok.Data;
-import lombok.EqualsAndHashCode;
 
-@EqualsAndHashCode(callSuper = true)
 @Entity
 @Table(name = "INSURANCE")
-@Data
-public class Insurance extends AbstractCrud {
+public class Insurance {
+
+    @Id
+    @Column(name = "ID", unique = true, nullable = false)
+    @GeneratedValue(strategy = GenerationType.UUID)
+    UUID id;
+
+    @Column(name = "created_at")
+    LocalDateTime createdAt;
+
+    @Column(name = "updated_at")
+    LocalDateTime updatedAt;
 
     @Column(name = "NAME")
-    private String name;
+    String name;
 
     @Column(name = "SIMPLE_NAME")
-    private String simpleName;
+    String simpleName;
 
     @Column(name = "INSURANCE_TYPE")
-    private InsuranceType insuranceType;
+    InsuranceType insuranceType;
 
-    @ManyToMany(fetch = FetchType.EAGER, cascade = {CascadeType.MERGE, CascadeType.PERSIST}, mappedBy = "insurances")
-    private Set<Customer> customers;
+    @JsonIgnore
+    @ManyToMany(fetch = FetchType.LAZY, mappedBy = "insurances")
+    Set<Customer> customers;
 
     @Column(name = "insurance_number")
-    private Integer insuranceNumber;
+    Integer insuranceNumber;
 
+    @Column(name = "insurance_coverage")
+    String insuranceCoverage;
+
+    @Column(name = "insurance_sum")
+    String insuranceSum;
+
+
+    public UUID getId() {
+        return id;
+    }
+
+    public void setId(final UUID id) {
+        this.id = id;
+    }
+
+    public String getName() {
+        return name;
+    }
+
+    public void setName(final String name) {
+        this.name = name;
+    }
+
+    public String getSimpleName() {
+        return simpleName;
+    }
+
+    public void setSimpleName(final String simpleName) {
+        this.simpleName = simpleName;
+    }
+
+    public InsuranceType getInsuranceType() {
+        return insuranceType;
+    }
+
+    public void setInsuranceType(final InsuranceType insuranceType) {
+        this.insuranceType = insuranceType;
+    }
+
+    public Set<Customer> getCustomers() {
+        return customers;
+    }
+
+    public void setCustomers(final Set<Customer> customers) {
+        this.customers = customers;
+    }
+
+    public Integer getInsuranceNumber() {
+        return insuranceNumber;
+    }
+
+    public void setInsuranceNumber(final Integer insuranceNumber) {
+        this.insuranceNumber = insuranceNumber;
+    }
+
+    public LocalDateTime getCreatedAt() {
+        return createdAt;
+    }
+
+    public void setCreatedAt(final LocalDateTime createdAt) {
+        this.createdAt = createdAt;
+    }
+
+    public LocalDateTime getUpdatedAt() {
+        return updatedAt;
+    }
+
+    public void setUpdatedAt(final LocalDateTime updatedAt) {
+        this.updatedAt = updatedAt;
+    }
+
+    public String getInsuranceCoverage() {
+        return insuranceCoverage;
+    }
+
+    public void setInsuranceCoverage(final String insuranceCoverage) {
+        this.insuranceCoverage = insuranceCoverage;
+    }
+
+    public String getInsuranceSum() {
+        return insuranceSum;
+    }
+
+    public void setInsuranceSum(final String insuranceSum) {
+        this.insuranceSum = insuranceSum;
+    }
 }

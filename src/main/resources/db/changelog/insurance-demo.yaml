@@ -30,3 +30,9 @@ databaseChangeLog:
               - column:
                   name: insurance_number
                   type: int
+              - column:
+                  name: insurance_coverage
+                  type: varchar(128)
+              - column:
+                  name: insurance_sum
+                  type: varchar(128)

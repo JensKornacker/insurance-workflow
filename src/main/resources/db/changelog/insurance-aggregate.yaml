@@ -45,3 +45,18 @@ databaseChangeLog:
               - column:
                   name: sufficient_income
                   type: boolean
+              - column:
+                  name: further_information
+                  type: varchar(8192)
+              - column:
+                  name: monthly_income
+                  type: int
+              - column:
+                  name: insurance_coverage
+                  type: varchar(128)
+              - column:
+                  name: insurance_sum
+                  type: varchar(128)
+              - column:
+                  name: liability_check
+                  type: varchar(128)

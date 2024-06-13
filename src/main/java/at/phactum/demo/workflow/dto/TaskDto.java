@@ -1,16 +1,24 @@
 package at.phactum.demo.workflow.dto;
 
+import lombok.AccessLevel;
+import lombok.AllArgsConstructor;
 import lombok.Data;
+import lombok.experimental.FieldDefaults;
 
 @Data
+@FieldDefaults(level = AccessLevel.PRIVATE)
+@AllArgsConstructor
 public class TaskDto {
-    private String taskId;
-    private String title;
-    private String description;
-    private String moduleId;
-    private String url;
-    private String completeEndpoint;
-    private String additionalInfo;
-    private String aggregateId;
-    private String status;
+    String taskId;
+    String title;
+    String description;
+    String moduleId;
+    String url;
+    String completeEndpoint;
+    String additionalInfo;
+    String aggregateId;
+    String status;
+    String config;
+    String configData;
+    String taskDefinition;
 }

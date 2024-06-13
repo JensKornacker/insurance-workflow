@@ -1,15 +1,19 @@
 package at.phactum.demo.insurance;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import at.phactum.demo.shared.utils.DataItemConverter;
 import at.phactum.demo.shared.utils.DataItem;
 import at.phactum.demo.shared.utils.DataItemGroup;
+import at.phactum.demo.shared.utils.HashMapConverter;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 
+import static org.assertj.core.api.Assertions.as;
 import static org.assertj.core.api.Assertions.assertThat;
 
 @SpringBootTest
@@ -17,6 +21,9 @@ class InsuranceApplicationTests {
 
     @Autowired
     private DataItemConverter dataItemConverter;
+
+    @Autowired
+    private HashMapConverter hashMapConverter;
 
     @Test
     void contextLoads() {
@@ -45,6 +52,17 @@ class InsuranceApplicationTests {
         final String converted = dataItemConverter.convertToDatabaseColumn(dataItemGroupList);
         final List<DataItemGroup> backToDataItemGroupList = dataItemConverter.convertToEntityAttribute(converted);
         assertThat(backToDataItemGroupList.equals(dataItemGroupList));
+
+        Map<String, Object> config = new HashMap<>();
+
+        config.put("gender", "DIVERS");
+        config.put("monthlyIncome", 1000);
+        config.put("worthy", "REJECTED");
+
+        final String configString = hashMapConverter.convertToDatabaseColumn(config);
+        assertThat(configString.contains("worthy"));
+        final Map<String, Object> configMap = hashMapConverter.convertToEntityAttribute(configString);
+        assertThat(configMap.equals(config));
     }
 
 

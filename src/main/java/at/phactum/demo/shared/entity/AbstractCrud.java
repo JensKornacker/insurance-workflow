@@ -14,15 +14,5 @@ import lombok.Data;
 @Data
 public class AbstractCrud {
 
-    @Id
-    @Column(name = "ID", unique = true, nullable = false)
-    @GeneratedValue(strategy = GenerationType.UUID)
-    protected UUID id;
-
-    @Column(name = "created_at")
-    protected LocalDateTime createdAt;
-
-    @Column(name = "updated_at")
-    protected LocalDateTime updatedAt;
 
 }

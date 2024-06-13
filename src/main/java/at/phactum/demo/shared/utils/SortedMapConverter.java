@@ -1,5 +1,6 @@
 package at.phactum.demo.shared.utils;
 
+import java.util.Collections;
 import java.util.SortedMap;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
@@ -24,6 +25,9 @@ public class SortedMapConverter implements AttributeConverter<SortedMap<String, 
 
     @Override
     public SortedMap<String, SortedMap<String, String>> convertToEntityAttribute(final String s) {
+        if (s == null) {
+            return Collections.emptySortedMap();
+        }
         TypeReference<SortedMap<String, SortedMap<String, String>>> typeReference = new TypeReference<>() {};
         try {
             return OBJECT_MAPPER.readValue(s, typeReference);

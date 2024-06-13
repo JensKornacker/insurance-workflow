@@ -51,4 +51,19 @@ public class InsuranceAggregate {
     @Column(name = "sufficient_income")
     private boolean sufficientIncome = false;
 
+    @Column(name = "further_information")
+    private String furtherInformation;
+
+    @Column(name = "monthly_income")
+    private Integer monthlyIncome;
+
+    @Column(name = "insurance_coverage")
+    String insuranceCoverage;
+
+    @Column(name = "insurance_sum")
+    String insuranceSum;
+
+    @Column(name = "liability_check")
+    String liabilityCheck;
+
 }

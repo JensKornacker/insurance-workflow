@@ -39,7 +39,6 @@ public class CustomerService {
     public CustomerDto getCustomer(UUID id) {
         final Customer customer = customerRepository.findById(id)
                                                     .orElseThrow(null);
-        final Set<Insurance> insurances = customer.getInsurances();
         return customerMapper.map(customer);
     }
 

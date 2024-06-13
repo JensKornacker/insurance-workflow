@@ -1,12 +1,10 @@
 package at.phactum.demo.insurance.service;
 
 import java.time.LocalDateTime;
-import java.util.Set;
 import java.util.UUID;
 
 import at.phactum.demo.customer.persistence.Customer;
 import at.phactum.demo.customer.persistence.CustomerRepository;
-import at.phactum.demo.insurance.dto.InsuranceDto;
 import at.phactum.demo.insurance.persistence.Insurance;
 import at.phactum.demo.insurance.persistence.InsuranceRepository;
 import at.phactum.demo.insurance.persistence.InsuranceType;
@@ -20,18 +18,19 @@ public class InsuranceService {
     private final InsuranceRepository insuranceRepository;
     private final CustomerRepository customerRepository;
 
-    public InsuranceDto saveInsurance(UUID customerId, String insuranceType) {
+    public void saveInsurance(UUID customerId, String insuranceType, String insuranceCoverage, String insuranceSum) {
         final Customer customer = customerRepository.findById(customerId).orElseThrow();
         Insurance insurance = new Insurance();
         insurance.setInsuranceType(InsuranceType.valueOf(insuranceType));
         insurance.setInsuranceNumber(generateInsuranceNumber());
-        insurance.setName(insuranceType + "-" + insurance.getInsuranceNumber());
+        insurance.setName(insuranceType + "-" + insurance.getInsuranceNumber() + "-" + customer.getCustomerNumber());
         insurance.setSimpleName("simple");
         insurance.setCreatedAt(LocalDateTime.now());
-        final Insurance saved = insuranceRepository.save(insurance);
-        customer.setInsurances(Set.of(saved));
+        insurance.setInsuranceCoverage(insuranceCoverage);
+        insurance.setInsuranceSum(insuranceSum);
+        insuranceRepository.save(insurance);
+        customer.getInsurances().add(insurance);
         customerRepository.save(customer);
-        return null;
     }
 
     private int generateInsuranceNumber() {

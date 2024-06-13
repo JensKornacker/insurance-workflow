@@ -1,8 +1,8 @@
 package at.phactum.demo.workflow.service;
 
 import java.time.LocalDateTime;
-import java.util.ArrayList;
-import java.util.List;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.SortedMap;
 import java.util.TreeMap;
 import java.util.UUID;
@@ -10,9 +10,6 @@ import java.util.UUID;
 import at.phactum.demo.customer.dto.CustomerDto;
 import at.phactum.demo.customer.service.CustomerService;
 import at.phactum.demo.insurance.service.InsuranceService;
-import at.phactum.demo.shared.utils.DataItem;
-import at.phactum.demo.shared.utils.DataItemConverter;
-import at.phactum.demo.shared.utils.DataItemGroup;
 import at.phactum.demo.shared.utils.HashMapConverter;
 import at.phactum.demo.shared.utils.SortedMapConverter;
 import at.phactum.demo.workflow.dto.CompleteTaskDto;
@@ -40,6 +37,17 @@ import org.springframework.transaction.annotation.Transactional;
 @Transactional
 public class InsuranceWorkflowService {
 
+    private static final String POSITION = "position";
+    private static final String MONTHLY_INCOME = "monthlyIncome";
+    private static final String MANUAL_CREDIT_CHECK_OUTCOME = "manualCreditCheckOutcome";
+    private static final String MANUAL_RISK_ASSESSMENT_OUTCOME = "manualRiskAssessmentOutcome";
+    private static final String TASK_DEFINITION_WORTHINESS_CHECK = "manualCreditworthinessCheck";
+    private static final String TASK_DEFINITION_RISK_ASSESSMENT = "manualRiskAssessment";
+    private static final String TASK_DEFINITION_LIABILITY_CHECK = "manualLiabilityCheck";
+    private static final String APPROVED = "APPROVED";
+    private static final String REJECTED = "REJECTED";
+    private static final String[] APPROVAL_ARRAY = new String[]{APPROVED, REJECTED};
+
     private static final String MODULE_ID = "insurance";
     private static final String MODULE_URL = "http://localhost:8080";
     private static final String COMPLETE_ENDPOINT = "/workflow/complete-task";
@@ -48,7 +56,6 @@ public class InsuranceWorkflowService {
     private final RestClientService restClientService;
     private final HashMapConverter hashMapConverter;
     private final SortedMapConverter sortedMapConverter;
-    private final DataItemConverter dataItemConverter;
     private final InsuranceAggregateRepository insuranceAggregateRepository;
     private final CustomerService customerService;
     private final InsuranceService insuranceService;
@@ -62,15 +69,17 @@ public class InsuranceWorkflowService {
         insuranceAggregate.setFloodRisk(typeDto.isFloodRisk());
         insuranceAggregate.setMudslideRisk(typeDto.isMudslideRisk());
         insuranceAggregate.setSufficientIncome(typeDto.isSufficientIncome());
+        insuranceAggregate.setInsuranceSum(typeDto.getInsuranceSum());
+        insuranceAggregate.setInsuranceCoverage(typeDto.getInsuranceCoverage());
         processService.startWorkflow(insuranceAggregate);
     }
 
     @WorkflowTask
     public void checkCreditworthiness(InsuranceAggregate insuranceAggregate) {
         if (insuranceAggregate.isSufficientIncome()) {
-            insuranceAggregate.setCreditCheckOutcome("APPROVED");
+            insuranceAggregate.setCreditCheckOutcome(APPROVED);
         } else {
-            insuranceAggregate.setCreditCheckOutcome("REJECTED");
+            insuranceAggregate.setCreditCheckOutcome(REJECTED);
         }
         insuranceAggregateRepository.save(insuranceAggregate);
     }
@@ -78,31 +87,50 @@ public class InsuranceWorkflowService {
     @WorkflowTask
     public void manualCreditworthinessCheck(InsuranceAggregate insuranceAggregate, @TaskId String taskId, @TaskEvent TaskEvent.Event taskEvent) {
 
-        DataItemGroup customer = addCustomerToAdditionalInfo(insuranceAggregate.getCustomerId());
+        SortedMap<String, SortedMap<String, String>> addInfo = getCustomerToAdditionalInfoMap(insuranceAggregate.getCustomerId());
 
-        List<DataItemGroup> additionalInfoList = new ArrayList<>();
-        additionalInfoList.add(customer);
-
-        DataItemGroup account = new DataItemGroup("account");
+        SortedMap<String, String> account = new TreeMap<>();
         if (insuranceAggregate.isSufficientIncome()) {
-            account.add(new DataItem<>("monthly", "> € 5000.-"));
+            account.put("monatliches Gehalt", "> € 5000.-");
         } else {
-            account.add(new DataItem<>("monthly", "< € 5000.-"));
+            account.put("monatliches Gehalt", "< € 5000.-");
         }
-        additionalInfoList.add(account);
+        addInfo.put("Konto", account);
 
-        TaskDto taskDto = fillTask(taskId,
-                                   "Credit Worthiness Check",
-                                   "this is for checking manually the credit worthiness",
-                                   MODULE_ID,
-                                   MODULE_URL,
-                                   insuranceAggregate.getId(),
-                                   COMPLETE_ENDPOINT);
-        taskDto.setAdditionalInfo(dataItemConverter.convertToDatabaseColumn(additionalInfoList));
+        Map<String, Object> config = new HashMap<>();
+
+        config.put(MONTHLY_INCOME, 1000);
+        config.put(MANUAL_CREDIT_CHECK_OUTCOME, REJECTED);
+
+        Map<String, Object> configData = new HashMap<>();
+        Map<String, Object> worthyMap = new HashMap<>();
+        worthyMap.put(POSITION, 1);
+        worthyMap.put("type", "enum");
+        worthyMap.put("values", APPROVAL_ARRAY);
+        configData.put(MANUAL_CREDIT_CHECK_OUTCOME, worthyMap);
+
+        Map<String, Object> monthlyIncomeMap = new HashMap<>();
+        monthlyIncomeMap.put(POSITION, 2);
+        monthlyIncomeMap.put("type", "number");
+
+        configData.put(MONTHLY_INCOME, monthlyIncomeMap);
+        TaskDto taskDto = new TaskDto(taskId,
+                                      "Credit Worthiness Check",
+                                      "this is for checking manually the credit worthiness",
+                                      MODULE_ID,
+                                      MODULE_URL,
+                                      COMPLETE_ENDPOINT,
+                                      sortedMapConverter.convertToDatabaseColumn(addInfo),
+                                      insuranceAggregate.getId(),
+                                      taskEvent.name(),
+                                      hashMapConverter.convertToDatabaseColumn(config),
+                                      hashMapConverter.convertToDatabaseColumn(configData),
+                                      "manualCreditworthinessCheck");
+
         log.info(taskEvent.name());
         log.info(taskEvent.toString());
         log.info("task ID: {}", taskId);
-        taskDto.setStatus(taskEvent.name());
+
         if (taskEvent.name().equals(TaskEvent.Event.CANCELED.name())) {
             canceledTask(taskId);
             return;
@@ -110,59 +138,66 @@ public class InsuranceWorkflowService {
         restClientService.sendTaskToList(taskDto);
     }
 
-    private TaskDto fillTask(String taskId, String title, String description, String moduleId, String moduleUrl, String aggregateId, String completeEndpoint) {
-        TaskDto taskDto = new TaskDto();
-        taskDto.setTaskId(taskId);
-        taskDto.setTitle(title);
-        taskDto.setDescription(description);
-        taskDto.setModuleId(moduleId);
-        taskDto.setUrl(moduleUrl);
-        taskDto.setAggregateId(aggregateId);
-        taskDto.setCompleteEndpoint(completeEndpoint);
-        return taskDto;
-    }
-
     @WorkflowTask
     public void riskAssessment(InsuranceAggregate insuranceAggregate) {
         if (insuranceAggregate.isFloodRisk() || insuranceAggregate.isMudslideRisk()) {
-            insuranceAggregate.setRiskAssessmentOutcome("REJECTED");
+            insuranceAggregate.setRiskAssessmentOutcome(REJECTED);
         } else {
-            insuranceAggregate.setRiskAssessmentOutcome("APPROVED");
+            insuranceAggregate.setRiskAssessmentOutcome(APPROVED);
         }
     }
 
     @WorkflowTask
     public void manualRiskAssessment(InsuranceAggregate insuranceAggregate, @TaskId String taskId, @TaskEvent TaskEvent.Event taskEvent) {
 
-        DataItemGroup customer = addCustomerToAdditionalInfo(insuranceAggregate.getCustomerId());
-        List<DataItemGroup> additionalInfoList = new ArrayList<>();
-        additionalInfoList.add(customer);
+        SortedMap<String, SortedMap<String, String>> addInfo = getCustomerToAdditionalInfoMap(insuranceAggregate.getCustomerId());
 
-        DataItemGroup riskAssessment = new DataItemGroup("riskAssessment");
+        SortedMap<String, String> riskAssessment = new TreeMap<>();
         if (insuranceAggregate.isMudslideRisk()) {
-            riskAssessment.add(new DataItem<>("Vermurungsgefahr", "Ja"));
+            riskAssessment.put("Vermurungsgefahr", "Ja");
         } else {
-            riskAssessment.add(new DataItem<>("Vermurungsgefahr", "Nein"));
+            riskAssessment.put("Vermurungsgefahr", "Nein");
         }
         if (insuranceAggregate.isFloodRisk()) {
-            riskAssessment.add(new DataItem<>("Überflutungsgefahr", "Ja"));
+            riskAssessment.put("Überflutungsgefahr", "Ja");
         } else {
-            riskAssessment.add(new DataItem<>("Überflutungsgefahr", "Nein"));
+            riskAssessment.put("Überflutungsgefahr", "Nein");
         }
-        additionalInfoList.add(riskAssessment);
+        addInfo.put("Risikoabschätzung", riskAssessment);
 
-        TaskDto taskDto = fillTask(taskId,
-                                   "Risk Assessment",
-                                   "risk assessment manually",
-                                   MODULE_ID,
-                                   MODULE_URL,
-                                   insuranceAggregate.getId(),
-                                   COMPLETE_ENDPOINT);
+        Map<String, Object> config = new HashMap<>();
 
-        taskDto.setAdditionalInfo(dataItemConverter.convertToDatabaseColumn(additionalInfoList));
+        config.put("furtherInformation", "");
+        config.put(MANUAL_RISK_ASSESSMENT_OUTCOME, "??");
+
+        Map<String, Object> configData = new HashMap<>();
+        Map<String, Object> riskyMap = new HashMap<>();
+        riskyMap.put(POSITION, 1);
+        riskyMap.put("type", "enum");
+        riskyMap.put("values", APPROVAL_ARRAY);
+        configData.put(MANUAL_RISK_ASSESSMENT_OUTCOME, riskyMap);
+
+        Map<String, Object> riskDescription = new HashMap<>();
+        riskDescription.put(POSITION, 2);
+        riskDescription.put("type", "textarea");
+
+        configData.put("furtherInformation", riskDescription);
+
+        TaskDto taskDto = new TaskDto(taskId,
+                                      "Risk Assessment",
+                                      "risk assessment manually",
+                                      MODULE_ID,
+                                      MODULE_URL,
+                                      COMPLETE_ENDPOINT,
+                                      sortedMapConverter.convertToDatabaseColumn(addInfo),
+                                      insuranceAggregate.getId(),
+                                      taskEvent.name(),
+                                      hashMapConverter.convertToDatabaseColumn(config),
+                                      hashMapConverter.convertToDatabaseColumn(configData),
+                                      "manualRiskAssessment");
+
         log.info(taskEvent.name());
         log.info(taskEvent.toString());
-        taskDto.setStatus(taskEvent.name());
         if (taskEvent.name().equals(TaskEvent.Event.CANCELED.name())) {
             canceledTask(taskId);
             return;
@@ -171,26 +206,98 @@ public class InsuranceWorkflowService {
     }
 
     @WorkflowTask
+    public void manualLiabilityCheck(InsuranceAggregate insuranceAggregate, @TaskId String taskId, @TaskEvent TaskEvent.Event taskEvent) {
+        if (taskEvent.name().equals(TaskEvent.Event.CANCELED.name())) {
+            canceledTask(taskId);
+            return;
+        }
+        SortedMap<String, SortedMap<String, String>> addInfo = getCustomerToAdditionalInfoMap(insuranceAggregate.getCustomerId());
+        SortedMap<String, String> liabilityCheck = new TreeMap<>();
+        liabilityCheck.put("insuranceCoverage", insuranceAggregate.getInsuranceCoverage());
+        liabilityCheck.put("insuranceSum", insuranceAggregate.getInsuranceSum());
+        addInfo.put("liabilityCheck", liabilityCheck);
+
+        Map<String, Object> config = new HashMap<>();
+        config.put("furtherInformation", "??");
+        config.put("approveProposal", "??");
+        Map<String, Object> furtherChecks = setTaskConfigData(1, "textarea", null);
+        Map<String, Object> approveProposal = setTaskConfigData(2, "enum", APPROVAL_ARRAY);
+        Map<String, Object> configData = new HashMap<>();
+        configData.put("furtherInformation", furtherChecks);
+        configData.put("approveProposal", approveProposal);
+
+        TaskDto taskDto = new TaskDto(taskId,
+                                      "Liability Check",
+                                      "Checking manually some background information for Liability Insurance like how many kids and things like this",
+                                      MODULE_ID,
+                                      MODULE_URL,
+                                      COMPLETE_ENDPOINT,
+                                      sortedMapConverter.convertToDatabaseColumn(addInfo),
+                                      insuranceAggregate.getId(),
+                                      taskEvent.name(),
+                                      hashMapConverter.convertToDatabaseColumn(config),
+                                      hashMapConverter.convertToDatabaseColumn(configData),
+                                      "manualLiabilityCheck");
+        log.info(taskEvent.name());
+        log.info(taskEvent.toString());
+
+        restClientService.sendTaskToList(taskDto);
+    }
+
+    private Map<String, Object> setTaskConfigData(int position, String type, String[] values) {
+        Map<String, Object> firstMap = new HashMap<>();
+        firstMap.put(POSITION, position);
+        firstMap.put("type", type);
+        firstMap.put("values", values);
+        return firstMap;
+    }
+
+    @WorkflowTask
     public void generateDocuments(InsuranceAggregate insuranceAggregate) {
-        insuranceService.saveInsurance(insuranceAggregate.getCustomerId(), insuranceAggregate.getInsuranceType());
+        insuranceService.saveInsurance(insuranceAggregate.getCustomerId(),
+                                       insuranceAggregate.getInsuranceType(),
+                                       insuranceAggregate.getInsuranceCoverage(),
+                                       insuranceAggregate.getInsuranceSum());
     }
 
     public void completeUserTask(CompleteTaskDto completeTaskDto) {
-        InsuranceAggregate insuranceAggregate;
-        if (completeTaskDto.getManualCreditCheckOutcome() != null) {
-            insuranceAggregate = setManuallyOutcomes(completeTaskDto.getAggregateId(),
-                                                     completeTaskDto.getManualCreditCheckOutcome(),
-                                                     null);
-        } else if (completeTaskDto.getManualRiskAssessmentOutcome() != null) {
-            insuranceAggregate = setManuallyOutcomes(completeTaskDto.getAggregateId(),
-                                                     null,
-                                                     completeTaskDto.getManualRiskAssessmentOutcome());
-        } else {
-            insuranceAggregate = insuranceAggregateRepository.findById(completeTaskDto.getAggregateId())
-                                                             .orElseThrow(null);
+        InsuranceAggregate insuranceAggregate = insuranceAggregateRepository.findById(completeTaskDto.getAggregateId())
+                                                                            .orElseThrow(null);
+        switch (completeTaskDto.getTaskDefinition()) {
+            case TASK_DEFINITION_WORTHINESS_CHECK -> {
+                for (Map.Entry<String, Object> entry : completeTaskDto.getCompleteVars().entrySet()) {
+                    if (entry.getKey().equals(MANUAL_CREDIT_CHECK_OUTCOME)) {
+                        insuranceAggregate.setManualCreditCheckOutcome(entry.getValue().toString());
+                    }
+                    if (entry.getKey().equals(MONTHLY_INCOME)) {
+                        insuranceAggregate.setMonthlyIncome(Integer.valueOf(entry.getValue().toString()));
+                    }
+                }
+            }
+            case TASK_DEFINITION_RISK_ASSESSMENT -> {
+                for (Map.Entry<String, Object> entry : completeTaskDto.getCompleteVars().entrySet()) {
+                    if (entry.getKey().equals(MANUAL_RISK_ASSESSMENT_OUTCOME)) {
+                        insuranceAggregate.setManualRiskAssessmentOutcome(entry.getValue().toString());
+                    }
+                    if (entry.getKey().equals("furtherInformation")) {
+                        insuranceAggregate.setFurtherInformation(entry.getValue().toString());
+                    }
+                }
+            }
+            case TASK_DEFINITION_LIABILITY_CHECK -> {
+                for (Map.Entry<String, Object> entry : completeTaskDto.getCompleteVars().entrySet()) {
+                    if (entry.getKey().equals("approveProposal")) {
+                        insuranceAggregate.setLiabilityCheck(entry.getValue().toString());
+                    }
+                }
+            }
+            default -> throw new IllegalStateException("Unexpected value: " + completeTaskDto.getTaskDefinition());
         }
+        insuranceAggregate.setUpdatedAt(LocalDateTime.now());
+        final InsuranceAggregate saved = insuranceAggregateRepository.save(insuranceAggregate);
+
         try {
-            processService.completeUserTask(insuranceAggregate, completeTaskDto.getTaskId());
+            processService.completeUserTask(saved, completeTaskDto.getTaskId());
             CompleteTaskEvent completeTaskEvent = new CompleteTaskEvent();
             completeTaskEvent.setTaskId(completeTaskDto.getTaskId());
             completeTaskEvent.setStatus("COMPLETED");
@@ -201,30 +308,22 @@ public class InsuranceWorkflowService {
 
     }
 
-    private InsuranceAggregate setManuallyOutcomes(String aggregateId, String manualCreditCheckOutcome, String manualRiskAssessmentOutcome) {
-        final InsuranceAggregate insuranceAggregate = insuranceAggregateRepository.findById(aggregateId)
-                                                                                  .orElseThrow(null);
-        if (manualCreditCheckOutcome != null) {
-            insuranceAggregate.setManualCreditCheckOutcome(manualCreditCheckOutcome);
-        } else if (manualRiskAssessmentOutcome != null) {
-            insuranceAggregate.setManualRiskAssessmentOutcome(manualRiskAssessmentOutcome);
-        }
-        return insuranceAggregateRepository.save(insuranceAggregate);
+    private SortedMap<String, SortedMap<String, String>> getCustomerToAdditionalInfoMap(UUID customerId) {
+        final CustomerDto customerDto = customerService.getCustomer(customerId);
+        SortedMap<String, SortedMap<String, String>> addInfo = new TreeMap<>();
+        return addCustomerToAdditionalInfo(addInfo, customerDto);
     }
 
-    private DataItemGroup addCustomerToAdditionalInfo(UUID customerId) {
-        final CustomerDto customerDto = customerService.getCustomer(customerId);
-        DataItemGroup customer = new DataItemGroup("customer");
-        customer.add(new DataItem<>("name", customerDto.getFirstname() + " " + customerDto.getLastname()))
-                .add(new DataItem<>("email", customerDto.getEmail()))
-                .add(new DataItem<>("telephone", customerDto.getPhoneNumber()))
-                .add(new DataItem<>("birthday", customerDto.getDateOfBirth().toString()))
-                .add(new DataItem<>("gender", customerDto.getGender()))
-                .add(new DataItem<>("street", customerDto.getStreet()))
-                .add(new DataItem<>("zipCode", customerDto.getZipCode()))
-                .add(new DataItem<>("city", customerDto.getCity()))
-                .add(new DataItem<>("country", customerDto.getCountry()));
-        return customer;
+    private SortedMap<String, SortedMap<String, String>> addCustomerToAdditionalInfo(SortedMap<String, SortedMap<String, String>> addInfo, CustomerDto customerDto) {
+
+        SortedMap<String, String> customerMap = new TreeMap<>();
+        customerMap.put("Name", customerDto.getFirstname() + " " + customerDto.getLastname());
+        customerMap.put("Email", customerDto.getEmail());
+        customerMap.put("Telephon", customerDto.getPhoneNumber());
+        customerMap.put("Geburtstag", customerDto.getDateOfBirth().toString());
+        customerMap.put("Geschlecht", customerDto.getGender().toString());
+        addInfo.put("customer", customerMap);
+        return addInfo;
     }
 
     private void canceledTask(String taskId) {

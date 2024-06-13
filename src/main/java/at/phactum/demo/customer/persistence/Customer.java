@@ -1,65 +1,89 @@
 package at.phactum.demo.customer.persistence;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.Set;
+import java.util.UUID;
 
 import at.phactum.demo.insurance.persistence.Insurance;
-import at.phactum.demo.shared.entity.Gender;
 import at.phactum.demo.shared.entity.AbstractCrud;
-import jakarta.persistence.CascadeType;
+import at.phactum.demo.shared.entity.Gender;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.FetchType;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
+import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.JoinTable;
 import jakarta.persistence.ManyToMany;
 import jakarta.persistence.Table;
-import lombok.Data;
 import lombok.EqualsAndHashCode;
+import lombok.Getter;
 
-@EqualsAndHashCode(callSuper = true)
 @Entity
 @Table(name = "CUSTOMER")
-public class Customer extends AbstractCrud {
+public class Customer {
+
+    @Id
+    @Column(name = "ID", unique = true, nullable = false)
+    @GeneratedValue(strategy = GenerationType.UUID)
+    UUID id;
 
     @Column(name = "GENDER")
-    private Gender gender;
+    Gender gender;
 
     @Column(name = "FIRSTNAME")
-    private String firstname;
+    String firstname;
 
     @Column(name = "LASTNAME")
-    private String lastname;
+    String lastname;
 
     @Column(name = "DATE_OF_BIRTH")
-    private LocalDate dateOfBirth;
+    LocalDate dateOfBirth;
 
     @Column(name = "PHONE_NUMBER")
-    private String phoneNumber;
+    String phoneNumber;
 
     @Column(name = "EMAIL_ADDRESS")
-    private String email;
+    String email;
 
     @Column(name = "street")
-    private String street;
+    String street;
 
     @Column(name = "zip_code")
-    private String zipCode;
+    String zipCode;
 
     @Column(name = "city")
-    private String city;
+    String city;
 
     @Column(name = "country")
-    private String country;
+    String country;
 
     @Column(name = "customer_number")
-    private Integer customerNumber;
+    Integer customerNumber;
 
-    @ManyToMany(fetch = FetchType.EAGER, cascade = {CascadeType.PERSIST, CascadeType.MERGE})
+    @ManyToMany(fetch = FetchType.LAZY)
     @JoinTable(name = "CUSTOMER_INSURANCE",
                joinColumns = @JoinColumn(name = "CUSTOMER_ID"),
                inverseJoinColumns = @JoinColumn(name = "INSURANCE_ID"))
-    private Set<Insurance> insurances;
+    Set<Insurance> insurances;
+
+
+    @Column(name = "created_at")
+    LocalDateTime createdAt;
+
+    @Column(name = "updated_at")
+    LocalDateTime updatedAt;
+
+
+    public UUID getId() {
+        return id;
+    }
+
+    public void setId(final UUID id) {
+        this.id = id;
+    }
 
     public Gender getGender() {
         return gender;
@@ -155,5 +179,21 @@ public class Customer extends AbstractCrud {
 
     public void setInsurances(final Set<Insurance> insurances) {
         this.insurances = insurances;
+    }
+
+    public LocalDateTime getCreatedAt() {
+        return createdAt;
+    }
+
+    public void setCreatedAt(final LocalDateTime createdAt) {
+        this.createdAt = createdAt;
+    }
+
+    public LocalDateTime getUpdatedAt() {
+        return updatedAt;
+    }
+
+    public void setUpdatedAt(final LocalDateTime updatedAt) {
+        this.updatedAt = updatedAt;
     }
 }
