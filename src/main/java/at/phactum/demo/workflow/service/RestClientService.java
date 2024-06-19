@@ -13,11 +13,11 @@ import org.springframework.web.client.RestClient;
 public class RestClientService {
 
     @Value("${tasklist.base-url}")
-    private static final String TASK_LIST_URL = "http://localhost:1111";
+    private String taskListUrl;
     private final RestClient restClient;
 
     public RestClientService(RestClient.Builder restClientBuilder) {
-        this.restClient = restClientBuilder.baseUrl(TASK_LIST_URL).build();
+        this.restClient = restClientBuilder.baseUrl(taskListUrl).build();
     }
 
     public void sendTaskToList(TaskDto taskDto) {
