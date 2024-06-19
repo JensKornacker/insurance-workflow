@@ -3,6 +3,7 @@ package at.phactum.demo.workflow.service;
 import at.phactum.demo.workflow.dto.CompleteTaskEvent;
 import at.phactum.demo.workflow.dto.TaskDto;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestClient;
@@ -11,6 +12,7 @@ import org.springframework.web.client.RestClient;
 @Slf4j
 public class RestClientService {
 
+    @Value("${tasklist.base-url}")
     private static final String TASK_LIST_URL = "http://localhost:1111";
     private final RestClient restClient;
 

@@ -99,8 +99,8 @@ public class InsuranceWorkflowService {
 
         Map<String, Object> config = new HashMap<>();
 
-        config.put(MONTHLY_INCOME, 1000);
-        config.put(MANUAL_CREDIT_CHECK_OUTCOME, REJECTED);
+        config.put(MONTHLY_INCOME, "");
+        config.put(MANUAL_CREDIT_CHECK_OUTCOME, "??");
 
         Map<String, Object> configData = new HashMap<>();
         Map<String, Object> worthyMap = new HashMap<>();
