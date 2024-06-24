@@ -61,9 +61,15 @@ public class InsuranceAggregate {
     String insuranceCoverage;
 
     @Column(name = "insurance_sum")
-    String insuranceSum;
+    private String insuranceSum;
 
     @Column(name = "liability_check")
-    String liabilityCheck;
+    private String liabilityCheck;
+
+    @Column(name = "payment_schedule")
+    private String paymentSchedule;
+
+    @Column(name = "amount")
+    private Integer amount;
 
 }

@@ -17,12 +17,12 @@ public class RestClientService {
     private final RestClient restClient;
 
     public RestClientService(RestClient.Builder restClientBuilder) {
-        this.restClient = restClientBuilder.baseUrl(taskListUrl).build();
+        this.restClient = restClientBuilder.build();
     }
 
     public void sendTaskToList(TaskDto taskDto) {
         ResponseEntity<Void> response = restClient.post()
-                                                  .uri("/tasks")
+                                                  .uri(taskListUrl + "/tasks")
                                                   .body(taskDto)
                                                   .retrieve()
                                                   .toBodilessEntity();
@@ -31,7 +31,7 @@ public class RestClientService {
 
     public void informTaskListAboutCompletedUserTask(CompleteTaskEvent completeTaskEvent) {
         ResponseEntity<Void> response = restClient.post()
-                                                  .uri("/tasks/complete")
+                                                  .uri(taskListUrl + "/tasks/complete")
                                                   .body(completeTaskEvent)
                                                   .retrieve()
                                                   .toBodilessEntity();

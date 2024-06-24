@@ -71,6 +71,8 @@ public class InsuranceWorkflowService {
         insuranceAggregate.setSufficientIncome(typeDto.isSufficientIncome());
         insuranceAggregate.setInsuranceSum(typeDto.getInsuranceSum());
         insuranceAggregate.setInsuranceCoverage(typeDto.getInsuranceCoverage());
+        insuranceAggregate.setPaymentSchedule(typeDto.getPaymentSchedule());
+        insuranceAggregate.setAmount(typeDto.getAmount());
         processService.startWorkflow(insuranceAggregate);
     }
 
@@ -257,7 +259,9 @@ public class InsuranceWorkflowService {
         insuranceService.saveInsurance(insuranceAggregate.getCustomerId(),
                                        insuranceAggregate.getInsuranceType(),
                                        insuranceAggregate.getInsuranceCoverage(),
-                                       insuranceAggregate.getInsuranceSum());
+                                       insuranceAggregate.getInsuranceSum(),
+                                       insuranceAggregate.getPaymentSchedule(),
+                                       insuranceAggregate.getAmount());
     }
 
     public void completeUserTask(CompleteTaskDto completeTaskDto) {

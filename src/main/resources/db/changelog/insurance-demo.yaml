@@ -36,3 +36,9 @@ databaseChangeLog:
               - column:
                   name: insurance_sum
                   type: varchar(128)
+              - column:
+                  name: payment_schedule
+                  type: varchar(128)
+              - column:
+                  name: amount
+                  type: int

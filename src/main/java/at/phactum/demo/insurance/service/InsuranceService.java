@@ -18,7 +18,7 @@ public class InsuranceService {
     private final InsuranceRepository insuranceRepository;
     private final CustomerRepository customerRepository;
 
-    public void saveInsurance(UUID customerId, String insuranceType, String insuranceCoverage, String insuranceSum) {
+    public void saveInsurance(UUID customerId, String insuranceType, String insuranceCoverage, String insuranceSum, String paymentSchedule, int amount) {
         final Customer customer = customerRepository.findById(customerId).orElseThrow();
         Insurance insurance = new Insurance();
         insurance.setInsuranceType(InsuranceType.valueOf(insuranceType));
@@ -28,6 +28,8 @@ public class InsuranceService {
         insurance.setCreatedAt(LocalDateTime.now());
         insurance.setInsuranceCoverage(insuranceCoverage);
         insurance.setInsuranceSum(insuranceSum);
+        insurance.setPaymentSchedule(paymentSchedule);
+        insurance.setAmount(amount);
         insuranceRepository.save(insurance);
         customer.getInsurances().add(insurance);
         customerRepository.save(customer);

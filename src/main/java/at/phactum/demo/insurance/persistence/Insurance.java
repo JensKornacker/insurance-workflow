@@ -14,6 +14,7 @@ import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.ManyToMany;
 import jakarta.persistence.Table;
+import org.checkerframework.checker.units.qual.C;
 
 @Entity
 @Table(name = "INSURANCE")
@@ -52,6 +53,11 @@ public class Insurance {
     @Column(name = "insurance_sum")
     String insuranceSum;
 
+    @Column(name = "payment_schedule")
+    String paymentSchedule;
+
+    @Column(name = "amount")
+    Integer amount;
 
     public UUID getId() {
         return id;
@@ -131,5 +137,21 @@ public class Insurance {
 
     public void setInsuranceSum(final String insuranceSum) {
         this.insuranceSum = insuranceSum;
+    }
+
+    public String getPaymentSchedule() {
+        return paymentSchedule;
+    }
+
+    public void setPaymentSchedule(final String paymentSchedule) {
+        this.paymentSchedule = paymentSchedule;
+    }
+
+    public Integer getAmount() {
+        return amount;
+    }
+
+    public void setAmount(final Integer amount) {
+        this.amount = amount;
     }
 }

@@ -1,5 +1,6 @@
 package at.phactum.demo.workflow.dto;
 
+import java.util.Map;
 import java.util.UUID;
 
 import at.phactum.demo.insurance.persistence.InsuranceType;
@@ -17,4 +18,6 @@ public class TypeDto {
     boolean sufficientIncome;
     String insuranceCoverage;
     String insuranceSum;
+    String paymentSchedule;
+    int amount;
 }

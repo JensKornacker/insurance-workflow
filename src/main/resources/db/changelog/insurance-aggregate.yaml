@@ -60,3 +60,9 @@ databaseChangeLog:
               - column:
                   name: liability_check
                   type: varchar(128)
+              - column:
+                  name: payment_schedule
+                  type: varchar(128)
+              - column:
+                  name: amount
+                  type: int
