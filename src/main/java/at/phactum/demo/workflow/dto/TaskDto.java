@@ -21,4 +21,5 @@ public class TaskDto {
     String config;
     String configData;
     String taskDefinition;
+    String type;
 }

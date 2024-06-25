@@ -127,7 +127,7 @@ public class InsuranceWorkflowService {
                                       taskEvent.name(),
                                       hashMapConverter.convertToDatabaseColumn(config),
                                       hashMapConverter.convertToDatabaseColumn(configData),
-                                      "manualCreditworthinessCheck");
+                                      TASK_DEFINITION_WORTHINESS_CHECK, insuranceAggregate.getInsuranceType());
 
         log.info(taskEvent.name());
         log.info(taskEvent.toString());
@@ -196,7 +196,7 @@ public class InsuranceWorkflowService {
                                       taskEvent.name(),
                                       hashMapConverter.convertToDatabaseColumn(config),
                                       hashMapConverter.convertToDatabaseColumn(configData),
-                                      "manualRiskAssessment");
+                                      TASK_DEFINITION_RISK_ASSESSMENT, insuranceAggregate.getInsuranceType());
 
         log.info(taskEvent.name());
         log.info(taskEvent.toString());
@@ -239,7 +239,7 @@ public class InsuranceWorkflowService {
                                       taskEvent.name(),
                                       hashMapConverter.convertToDatabaseColumn(config),
                                       hashMapConverter.convertToDatabaseColumn(configData),
-                                      "manualLiabilityCheck");
+                                      TASK_DEFINITION_LIABILITY_CHECK, insuranceAggregate.getInsuranceType());
         log.info(taskEvent.name());
         log.info(taskEvent.toString());
 

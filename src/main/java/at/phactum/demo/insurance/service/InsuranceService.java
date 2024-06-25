@@ -23,7 +23,7 @@ public class InsuranceService {
         Insurance insurance = new Insurance();
         insurance.setInsuranceType(InsuranceType.valueOf(insuranceType));
         insurance.setInsuranceNumber(generateInsuranceNumber());
-        insurance.setName(insuranceType + "-" + insurance.getInsuranceNumber() + "-" + customer.getCustomerNumber());
+        insurance.setName(insuranceType.toLowerCase() + "-" + insurance.getInsuranceNumber() + "-" + customer.getCustomerNumber());
         insurance.setSimpleName("simple");
         insurance.setCreatedAt(LocalDateTime.now());
         insurance.setInsuranceCoverage(insuranceCoverage);
@@ -37,8 +37,7 @@ public class InsuranceService {
 
     private int generateInsuranceNumber() {
         final long insuranceCount = insuranceRepository.count();
-        return Long.valueOf(insuranceCount + 1).intValue();
+        return 11111 + Long.valueOf(insuranceCount + 1).intValue();
     }
-
 
 }
